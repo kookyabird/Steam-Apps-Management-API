@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using Indieteur.VDFAPI;
 
 namespace Indieteur.SAMAPI
@@ -63,9 +58,9 @@ namespace Indieteur.SAMAPI
             }
         }
 
-        internal bool _isUpdating = false;
-        internal bool _isRunning = false;
-        internal Process _runningProc = null;
+        internal bool _isUpdating;
+        internal bool _isRunning;
+        internal Process _runningProc;
 
 
         string _Name, _InstallDir, _InstallDirName;
@@ -109,7 +104,7 @@ namespace Indieteur.SAMAPI
         void init (VDFData vdfdata, string LibPath)
         {
             if (vdfdata == null) 
-                throw new ArgumentNullException("Argument VDF Data is set to null!");
+                throw new ArgumentNullException(nameof(vdfdata), "Argument VDF Data is set to null!");
 
             if (vdfdata.Nodes == null || vdfdata.Nodes.Count == 0) 
                 throw new NullReferenceException("Nodes of VDFData is either null or empty!");

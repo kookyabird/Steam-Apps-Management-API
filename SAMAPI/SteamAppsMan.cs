@@ -26,18 +26,17 @@ namespace Indieteur.SAMAPI
         /// <summary>
         /// The installation directory of steam.
         /// </summary>
-        public string InstallDir { get { return _installdir; } }
+        public string InstallDir => _installdir;
 
         /// <summary>
         /// List of path to the Library Folders of the Steam Installation.
         /// </summary>
-        public IReadOnlyList<string> LibraryFolders { get { return _libraryFolders; } }
+        public IReadOnlyList<string> LibraryFolders => _libraryFolders;
 
         /// <summary>
         /// List of Steam Applications installed.
         /// </summary>
-        public IReadOnlyList<SteamApp> SteamApps { get { return _steamapps; } }
-
+        public IReadOnlyList<SteamApp> SteamApps => _steamapps;
 
         List<string> _libraryFolders;
         List<SteamApp> _steamapps;
@@ -108,15 +107,11 @@ namespace Indieteur.SAMAPI
             //Code based on DonBoitnott answer on https://stackoverflow.com/questions/18232972/how-to-read-value-of-a-registry-key-c-sharp.
             using (RegistryKey key = Registry.LocalMachine.OpenSubKey((Environment.Is64BitOperatingSystem) ? REG_STEAM_x64 : REG_STEAM)) //Find the key that contains the installation path of Steam
             {
-                if (key != null)
+                Object value = key?.GetValue(REG_INSTALLPATH_KEY); //Find the "InstallPath" value in the Steam Registry Key. It'll return it as an object which we will need to cast
+                if (value != null)
                 {
-                 
-                    Object value = key.GetValue(REG_INSTALLPATH_KEY); //Find the "InstallPath" value in the Steam Registry Key. It'll return it as an object which we will need to cast
-                    if (value != null)
-                    {
                         
-                        return (string)value; //Value is a string so we should be able to cast it without any problems.
-                    }
+                    return (string)value; //Value is a string so we should be able to cast it without any problems.
                 }
             }
             return ""; 

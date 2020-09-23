@@ -1,10 +1,6 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Indieteur.SAMAPI
 {
@@ -18,8 +14,7 @@ namespace Indieteur.SAMAPI
         /// <returns></returns>
         public static bool IsInteger(this string s)
         {
-            int output;
-            return int.TryParse(s, out output);
+            return int.TryParse(s, out _);
         }
 
         /// <summary>
@@ -30,15 +25,12 @@ namespace Indieteur.SAMAPI
         /// <returns></returns>
         public static int HKCU_RegGetKeyInt(string path, string valname)
         {
-            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(path)) 
+            using (RegistryKey key = Registry.CurrentUser.OpenSubKey(path))
             {
-                if (key != null)
+                Object value = key?.GetValue(valname); 
+                if (value != null)
                 {
-                    Object value = key.GetValue(valname); 
-                    if (value != null)
-                    {
-                        return (int)value; //Return the value but cast it as an int first as it is a int type value.
-                    }
+                    return (int)value; //Return the value but cast it as an int first as it is a int type value.
                 }
             }
             return -1; //If key or value isn't found, return -1.
@@ -82,10 +74,7 @@ namespace Indieteur.SAMAPI
                     }
                     
                 }
-                catch
-                {
-                    continue; //Just iterate to the next process if an error occurs.
-                }
+                catch { }
             }
             return process;
             

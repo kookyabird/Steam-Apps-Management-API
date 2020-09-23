@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Management;
 using System.Diagnostics;
 
@@ -21,7 +18,7 @@ namespace Indieteur.SAMAPI
         public static SteamApp FindAppByName(this IEnumerable<SteamApp> listofapps, string name, bool CaseSensitive = false, bool ThrowErrorOnNotFound = false)
         {
             if (string.IsNullOrWhiteSpace(name))
-                throw new ArgumentNullException("Argument name cannot be null, empty or whitespace!");           
+                throw new ArgumentNullException(nameof(name), "Argument name cannot be null, empty or whitespace!");           
             if (!CaseSensitive) //If not case sensitive, then convert the name to its lower case variant.
                 name = name.ToLower();
 

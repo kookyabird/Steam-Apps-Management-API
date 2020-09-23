@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
+﻿using System.Threading;
 
 namespace Indieteur.SAMAPI
 {
@@ -11,40 +7,19 @@ namespace Indieteur.SAMAPI
         /// <summary>
         /// Returns true if the Event Listener is running. False if not.
         /// </summary>
-        public bool EventListenerRunning
-        {
-            get
-            {
-                if (listenerThread != null) //Check if the listenerThread variable is null. If not then, return the isalive field of the listenerThread.
-                {
-                    return listenerThread.IsAlive;
-                }
-                return false; //We can safely assume that the event listener thread is not running if the listenerThread var is set to null.
-            }
-        }
+        public bool EventListenerRunning => listenerThread != null && listenerThread.IsAlive;
 
         /// <summary>
         /// Returns true if the library was ordered to start listening for events and false if not or if the library already received the command to stop.
         /// </summary>
-        public bool EventListenerMustRun
-        {
-            get
-            {
-                return (listenerShouldRun > 0);
-            }
-        }
+        public bool EventListenerMustRun => (listenerShouldRun > 0);
+
         /// <summary>
         /// The interval set between Event Listener checks in milliseconds.
         /// </summary>
-        public int EventListenerInterval
-        {
-            get
-            {
-                return listener_interval;
-            }
-        }
+        public int EventListenerInterval => listener_interval;
 
-        int listenerShouldRun = 0; //Thread Cleanup based on https://stackoverflow.com/questions/12312155/finishing-up-a-thread-loop-after-disposal.
+        int listenerShouldRun; //Thread Cleanup based on https://stackoverflow.com/questions/12312155/finishing-up-a-thread-loop-after-disposal.
         int listener_interval;
 
         Thread listenerThread;
@@ -59,7 +34,7 @@ namespace Indieteur.SAMAPI
                 throw new ThreadStateException("A listener thread is already running!");
             Interlocked.Exchange(ref listenerShouldRun, 1); //Similar to listenerShouldRun = 1; but for thread safety reason, we need to do call this method instead.
             Interlocked.Exchange(ref listener_interval, Interval);
-            listenerThread = new Thread(new ThreadStart(ListenerThreadMethod)); 
+            listenerThread = new Thread(ListenerThreadMethod); 
             listenerThread.Start();
         }
 

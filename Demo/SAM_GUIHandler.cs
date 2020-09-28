@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Demo
+﻿namespace Demo
 {
-    partial class frmMainDemo
+    partial class FrmMainDemo
     {
         //The default text that will be displayed on the status bar and the buttons.
         const string LOADINGLIB = "Loading Steam Library...";
@@ -15,20 +9,20 @@ namespace Demo
         const string BTN_EVENT_START = "Start watching for Events";
         const string BTN_EVENT_STOP = "Stop watching for Events";
 
-        void GUI_BaseControlsEnabled(bool Enabled) //This method handles the enabling of the Refresh and Start/Stop Watching for Events button.
+        void GUI_BaseControlsEnabled(bool enabled) //This method handles the enabling of the Refresh and Start/Stop Watching for Events button.
         {
             
-            btnRefresh.Enabled = Enabled;
-            btnStartWatchEvents.Enabled = Enabled;
-            if (Enabled) //Also make sure to let the user know that we are loading the steam library.
+            btnRefresh.Enabled = enabled;
+            btnStartWatchEvents.Enabled = enabled;
+            if (enabled) //Also make sure to let the user know that we are loading the steam library.
                 toolStripStatus.Text = IDLE;
             else
                 toolStripStatus.Text = LOADINGLIB;
         }
 
-        void GUI_EventListenUpdate(bool Listening) //This method is called when the user presses the Start/Stop Watching Events button.
+        void GUI_EventListenUpdate(bool listening) //This method is called when the user presses the Start/Stop Watching Events button.
         {
-            if (Listening) //Check if the user wants us to start listening for events.
+            if (listening) //Check if the user wants us to start listening for events.
             {
                 btnStartWatchEvents.Text = BTN_EVENT_STOP; 
                 groupStatus.Enabled = true;
@@ -41,7 +35,7 @@ namespace Demo
                 toolStripStatus.Text = WAITINGEVENTSTOP; //Update the status bar.
                 btnStartWatchEvents.Enabled = false; //Disable the Stop Watching Event button so that the user doesn't accidentally press it again while the event listening thread is being stopped.
                
-                while (SAM.EventListenerRunning)
+                while (_sam.EventListenerRunning)
                 {
                     //Wait for the event listener to stop before we update the GUI.
                 }

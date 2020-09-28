@@ -41,12 +41,15 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BaseTokenExtenstionMethod.cs" />
+    <Compile Include="Delimiters.cs" />
     <Compile Include="KeyExtensionMethods.cs" />
     <Compile Include="NodeExtensionMethods.cs" />
     <Compile Include="Helper.cs" />
-    <Compile Include="VDFData.cs" />
-    <Compile Include="VDFClasses.cs" />
+    <Compile Include="VdfData.cs" />
+    <Compile Include="VdfClasses.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="VdfParser.cs" />
+    <Compile Include="VdfStreamException.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

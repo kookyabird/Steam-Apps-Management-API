@@ -1,16 +1,11 @@
 ﻿using Indieteur.VDFAPI;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Demo
 {
-    public partial class frmDemoVDF : Form
+    public partial class FrmDemoVdf : Form
     {
-        void ClearDialogBoxes()
+        void clearDialogBoxes()
         {
             openFileDialog.FileName = "";
             saveFileDialog.FileName = "";
@@ -56,15 +51,15 @@ namespace Demo
             btnAddNode.Enabled = true;
         }
 
-        void GUIUpdate_SetTextValueEnabled(bool Enabled)
+        void GUIUpdate_SetTextValueEnabled(bool enabled)
         {
-            lblValue.Enabled = Enabled;
-            txtValue.Enabled = Enabled;
+            lblValue.Enabled = enabled;
+            txtValue.Enabled = enabled;
         }
-        void GUIUpdate_SetTextNameEnabled(bool Enabled)
+        void GUIUpdate_SetTextNameEnabled(bool enabled)
         {
-            lblName.Enabled = Enabled;
-            txtName.Enabled = Enabled;
+            lblName.Enabled = enabled;
+            txtName.Enabled = enabled;
         }
 
         void GUIUpdate_ClearInfo()
@@ -72,22 +67,22 @@ namespace Demo
             txtName.Text = "";
             txtValue.Text = "";
         }
-        void GUIUpdate_RevertInfo (TreeNodeVDFTag token)
+        void GUIUpdate_RevertInfo (TreeNodeVdfTag token)
         {
-            if (token.TagType == TreeNodeVDFTag.Type.Key)
+            if (token.TagType == TreeNodeVdfTag.Type.Key)
             {
-                GUIUpdate_LoadKeyInfo(token.Token as VDFKey);
+                GUIUpdate_LoadKeyInfo(token.Token as VdfKey);
             }
             else
             {
-                GUIUpdate_LoadNodeInfo(token.Token as VDFNode);
+                GUIUpdate_LoadNodeInfo(token.Token as VdfNode);
             }
         }
-        void GUIUpdate_LoadNodeInfo(VDFNode node)
+        void GUIUpdate_LoadNodeInfo(VdfNode node)
         {
             txtName.Text = node.Name;
         }
-        void GUIUpdate_LoadKeyInfo(VDFKey key)
+        void GUIUpdate_LoadKeyInfo(VdfKey key)
         {
             txtName.Text = key.Name;
             txtValue.Text = key.Value;

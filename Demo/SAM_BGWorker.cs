@@ -1,26 +1,21 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Indieteur.SAMAPI;
+﻿using System.Diagnostics;
+
 namespace Demo
 {
-    partial class frmMainDemo
+    partial class FrmMainDemo
     {
-        void UpdateGUIElements(ListBoxItem lbi) //This method is called when the user selects a listbox item (and it will be called continually every second.)
+        void updateGuiElements(ListBoxItem lbi) //This method is called when the user selects a listbox item (and it will be called continually every second.)
         {
             //Update the textboxes accordingly.
             txtName.Text = lbi.Name;
-            txtAppID.Text = lbi.AssociatedApp.AppID.ToString();
+            txtAppID.Text = lbi.AssociatedApp.AppId.ToString();
             txtInstallDir.Text = lbi.AssociatedApp.InstallDir;
            
             btnOpenFileExplore.Enabled = true; 
            
-            if (SAM.EventListenerRunning) //Check if the event listener is running as it is useless to update the Running, Updating Checkboxes and the PID textbox if it isn't.
+            if (_sam.EventListenerRunning) //Check if the event listener is running as it is useless to update the Running, Updating Checkboxes and the PID textbox if it isn't.
             {
-                UpdateAppStatus(lbi);
+                updateAppStatus(lbi);
             }
             else //If the event listener isn't running at all, make sure to set the associated controls value or enabled/checked property to defaults.
             {
@@ -32,7 +27,7 @@ namespace Demo
             }
         }
 
-        void UpdateAppStatus(ListBoxItem lbi)  //This method is called when the user selects a listbox item and the event listener is running. (Will be called continually every second if there's an item selected on the list box.)
+        void updateAppStatus(ListBoxItem lbi)  //This method is called when the user selects a listbox item and the event listener is running. (Will be called continually every second if there's an item selected on the list box.)
         {
             cboxIsRunning.Checked = lbi.AssociatedApp.IsRunning; //Set the value of the Running checkbox accordingly.
             if (lbi.AssociatedApp.IsRunning) 

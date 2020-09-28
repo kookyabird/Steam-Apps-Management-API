@@ -1,6 +1,6 @@
 ﻿namespace Demo
 {
-    partial class frmDemoVDF
+    partial class FrmDemoVdf
     {
         /// <summary>
         /// Required designer variable.
@@ -229,7 +229,7 @@
             this.Controls.Add(this.btnLoadfromFile);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "frmDemoVDF";
+            this.Name = "FrmDemoVdf";
             this.ShowIcon = false;
             this.Text = "VDF Stream Demo";
             this.Load += new System.EventHandler(this.frmDemo_Load);

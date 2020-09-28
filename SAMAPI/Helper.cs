@@ -39,14 +39,14 @@ namespace Indieteur.SAMAPI
         /// <summary>
         /// Finds the process pertaining to the application by checking if the process executable is found inside the application's directory (and if it the process name and the ExeName matches.)
         /// </summary>
-        /// <param name="AppMainDir">The directory where the application can be found.</param>
-        /// <param name="ExeName">The executable name which will be matched against the process name. Can be left blank and the method will return the earliest created process with an executable found under the application directory instead.</param>
+        /// <param name="appMainDir">The directory where the application can be found.</param>
+        /// <param name="exeName">The executable name which will be matched against the process name. Can be left blank and the method will return the earliest created process with an executable found under the application directory instead.</param>
         /// <returns></returns>
-        public static Process FindAppProcess(string AppMainDir, string ExeName = null)
+        public static Process FindAppProcess(string appMainDir, string exeName = null)
         {
             Process process = null; //The process which we will be returning back if ExeName isn't set or if no matching process is found.
             Process[] processesList = Process.GetProcesses(); //Retrieve all the processes running.
-            AppMainDir = AppMainDir.ToLower().Trim();
+            appMainDir = appMainDir.ToLower().Trim();
 
             foreach (Process procFound in processesList) //Loop through the processes.
             {
@@ -54,7 +54,7 @@ namespace Indieteur.SAMAPI
                 try //There are a lot of possible exceptions that might be raised that we can just ignore like Access Denied for system processes. 
                 {
                     string procFileName = procFound.MainModule.FileName.ToLower().Trim(); //Make sure that the capitalization of the file path won't be an issue.
-                    if (procFileName.StartsWith(AppMainDir)) //The first thing that we will need to do is check if the executable associated with the process is located under the correct directory.
+                    if (procFileName.StartsWith(appMainDir)) //The first thing that we will need to do is check if the executable associated with the process is located under the correct directory.
                     {
                         if (process != null) //Check if we already have a candidate process. If we do, compare its start time to the start time of the current process we are checking.
                         {
@@ -66,9 +66,9 @@ namespace Indieteur.SAMAPI
                             process = procFound; //If there's no candidate process yet, then set the current process we are checking as the possible App's process.
                         }
                            
-                        if (!string.IsNullOrWhiteSpace(ExeName)) //If the ExeName argument isn't empty.
+                        if (!string.IsNullOrWhiteSpace(exeName)) //If the ExeName argument isn't empty.
                         {
-                            if (procFound.ProcessName == ExeName) //Check if the process' name matches with ExeName. If it is, then we can somewhat assume that we have the right process. 
+                            if (procFound.ProcessName == exeName) //Check if the process' name matches with ExeName. If it is, then we can somewhat assume that we have the right process. 
                                 return procFound;
                         }
                     }

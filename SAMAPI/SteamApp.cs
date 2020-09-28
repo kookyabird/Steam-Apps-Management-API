@@ -18,90 +18,82 @@ namespace Indieteur.SAMAPI
         /// <summary>
         /// The name of the Steam application.
         /// </summary>
-        public string Name { get { return _Name; } }
+        public string Name { get; private set; }
+
         /// <summary>
         /// The Application ID of the Steam application.
         /// </summary>
-        public int AppID { get { return _AppID; } }
+        public int AppId { get; private set; }
+
         /// <summary>
         /// The path to the installation directory of the Steam Application.
         /// </summary>
-        public string InstallDir { get { return _InstallDir; } }
+        public string InstallDir { get; private set; }
+
         /// <summary>
         /// The name of the installation directory of the Steam Application.
         /// </summary>
-        public string InstallDirName { get { return _InstallDirName; } }
+        public string InstallDirName { get; private set; }
+
         /// <summary>
         /// Returns true if the status of the Steam Application was set to updating by the Steam Client and false if not. (This field only gets updated if the Event Listener is running or the CheckForEvents/UpdateAppStatus method was called beforehand.)
         /// </summary>
-        public bool IsUpdating { get { return _isUpdating; } }
+        public bool IsUpdating { get; private set; }
+
         /// <summary>
         /// Returns true if the status of the Steam Application was set to running by the Steam Client and false if not. (This field only gets updated if the Event Listener is running or the CheckForEvents/UpdateAppStatus method was called beforehand.)
         /// </summary>
-        public bool IsRunning { get { return _isRunning; } }
+        public bool IsRunning { get; private set; }
+
         /// <summary>
         /// Returns a Process class instance which contains detailed information about the running process pertaining to the application. (This field only gets updated if the Event Listener is running or the CheckForEvents/UpdateAppStatus method was called beforehand.)
         /// </summary>
-        public Process RunningProcess { get { return _runningProc; } }
+        public Process RunningProcess { get; private set; }
+
         /// <summary>
         /// Indicates the executable name of the application (without the .exe) which will be used to locate the running process when the app is launched. If left empty, the library will try to guess which process pertains to the app.
         /// </summary>
         public string ProcessNameToFind
         {
-            get
-            {
-                return _exeName;
-            }
-            set
-            {
-                Interlocked.Exchange(ref _exeName, value);
-            }
+            get => _exeName;
+            set => Interlocked.Exchange(ref _exeName, value);
         }
 
-        internal bool _isUpdating;
-        internal bool _isRunning;
-        internal Process _runningProc;
-
-
-        string _Name, _InstallDir, _InstallDirName;
         string _exeName = "";
-
-        int _AppID;
 
         /// <summary>
         /// Returns the VDF Data Structure pertaining to the Steam Application which was parsed to retrieve information like the Name, AppId, etc. of the app.
         /// </summary>
-        public VDFData UnparsedData { get { return _unparsedData; } }
-        VDFData _unparsedData;
-       
+        public VdfData UnparsedData { get; private set; }
 
         /// <summary>
         /// Creates a SteamApp Class instance using an already parsed VDF Data Structure.
         /// </summary>
         /// <param name="parsedmanifest">The parsed VDF Data Structure.</param>
-        /// <param name="LibPath">The path of the library containing the application.</param>
-        public SteamApp(VDFData parsedmanifest, string LibPath)
+        /// <param name="libPath">The path of the library containing the application.</param>
+        public SteamApp(VdfData parsedmanifest, string libPath)
         {
-            init(parsedmanifest, LibPath);
+            init(parsedmanifest, libPath);
         }
 
         /// <summary>
         /// Creates a SteamApp Class instance by parsing the VDF Data Structure in a Manifest file.
         /// </summary>
-        /// <param name="ManifestPath">The path to the Application Manifest file.</param>
-        /// <param name="LibPath">The path of the library containing the application.</param>
-        public SteamApp(string ManifestPath, string LibPath)
+        /// <param name="manifestPath">The path to the Application Manifest file.</param>
+        /// <param name="libPath">The path of the library containing the application.</param>
+        public SteamApp(string manifestPath, string libPath)
         {
-            VDFData vData = new VDFData(ManifestPath);
-            init(vData, LibPath);
+            var vData = new VdfData();
+            vData.LoadDataFromFile(manifestPath);
+            init(vData, libPath);
         }
 
         /// <summary>
         /// Initializes the SteamApp class.
         /// </summary>
         /// <param name="vdfdata">The parsed VDF Data Structure.</param>
-        /// <param name="LibPath">The path of the library containing the application.</param>
-        void init (VDFData vdfdata, string LibPath)
+        /// <param name="libPath">The path of the library containing the application.</param>
+        void init (VdfData vdfdata, string libPath)
         {
             if (vdfdata == null) 
                 throw new ArgumentNullException(nameof(vdfdata), "Argument VDF Data is set to null!");
@@ -109,9 +101,9 @@ namespace Indieteur.SAMAPI
             if (vdfdata.Nodes == null || vdfdata.Nodes.Count == 0) 
                 throw new NullReferenceException("Nodes of VDFData is either null or empty!");
 
-            _unparsedData = vdfdata;
+            UnparsedData = vdfdata;
 
-            VDFNode vNode = vdfdata.Nodes.FindNode(MANIFEST_NODE); //Locate our root node. We can do nodes[0] as well and it'll be faster but just to be safe.
+            var vNode = vdfdata.Nodes.FindNode(MANIFEST_NODE); //Locate our root node. We can do nodes[0] as well and it'll be faster but just to be safe.
 
             if (vNode == null)
                 throw new NullReferenceException("Node " + MANIFEST_NODE + " is not found!");
@@ -119,10 +111,10 @@ namespace Indieteur.SAMAPI
             if (vNode.Keys == null || vNode.Keys.Count == 0)
                 throw new NullReferenceException("Node " + MANIFEST_NODE + " list of keys is either null or empty!");
 
-            VDFKey vKey = vNode.Keys.FindKey(MANIFEST_KEY_NAME); //Locate our first key which will be the name of the app.
+            var vKey = vNode.Keys.FindKey(MANIFEST_KEY_NAME); //Locate our first key which will be the name of the app.
 
             if (vKey != null) 
-                _Name = vKey.Value;
+                Name = vKey.Value;
             else
                 throw new NullReferenceException("Key pertaining to the name of the app is not found under " + MANIFEST_NODE + " node.");
 
@@ -130,11 +122,8 @@ namespace Indieteur.SAMAPI
 
             if (vKey != null) 
             {
-                int tryresult;
-                if (int.TryParse(vKey.Value,out tryresult)) 
-                {
-                    _AppID = tryresult;
-                }
+                if(int.TryParse(vKey.Value, out var tryresult))
+                    AppId = tryresult;
                 else
                     throw new NullReferenceException("Key pertaining to the Application ID of the app under " + MANIFEST_NODE + " node is invalid!");
             }
@@ -145,9 +134,8 @@ namespace Indieteur.SAMAPI
 
             if (vKey != null)
             {
-                _InstallDir = LibPath + "\\" + SteamAppsManager.STEAM_APPS_DIRNAME + "\\" + SteamAppsManager.STEAM_APPS_COMMON_DIRNAME + "\\" + vKey.Value; 
-                _InstallDirName = vKey.Value; 
-
+                InstallDir = libPath + "\\" + SteamAppsManager.SteamAppsDirname + "\\" + SteamAppsManager.SteamAppsCommonDirname + "\\" + vKey.Value; 
+                InstallDirName = vKey.Value; 
             }
             else
                 throw new NullReferenceException("Key pertaining to the directory name containing the app under " + MANIFEST_NODE + " node is not found!");
@@ -159,7 +147,7 @@ namespace Indieteur.SAMAPI
         /// </summary>
         public void Launch()
         {
-            Process.Start("steam://rungameid/" + _AppID.ToString());
+            Process.Start("steam://rungameid/" + AppId);
         }
 
         /// <summary>
@@ -167,42 +155,37 @@ namespace Indieteur.SAMAPI
         /// </summary>
         public void UpdateAppStatus()
         {
-            string regPath = SteamAppsManager.REG_STEAM + "\\" + SteamAppsManager.REG_APPS_KEY + "\\" + AppID.ToString(); //We can know if the application is running or updating by checking certain values under this registry key.
-            int isRunningOrUpdating = Helper.HKCU_RegGetKeyInt(regPath, SteamAppsManager.REG_RUNNING_KEY); //The first value we check is if the application is running. Retrieve the value on registry using our helper method.
+            var regPath = SteamAppsManager.RegSteam + "\\" + SteamAppsManager.RegAppsKey + "\\" + AppId; //We can know if the application is running or updating by checking certain values under this registry key.
+            int isRunningOrUpdating = Helper.HKCU_RegGetKeyInt(regPath, SteamAppsManager.RegRunningKey); //The first value we check is if the application is running. Retrieve the value on registry using our helper method.
             if (isRunningOrUpdating < 0)
-                throw new NullReferenceException("Running key under " + regPath + " registry path is not found!"); 
-            else if (isRunningOrUpdating > 0) 
+                throw new NullReferenceException("Running key under " + regPath + " registry path is not found!");
+            if (isRunningOrUpdating > 0) 
             {
-                if (_runningProc == null) 
+                if (RunningProcess == null) 
                 {
                     string tExeName = _exeName; //For thread safety purposes. Cache the string value.
-                    _runningProc = Helper.FindAppProcess(_InstallDir, tExeName); //Only perform the search helper method when the process hasn't been located yet as the execution is costly.
+                    RunningProcess = Helper.FindAppProcess(InstallDir, tExeName); //Only perform the search helper method when the process hasn't been located yet as the execution is costly.
                 }
                 else
                 {
-                    _runningProc.Refresh(); //Refresh the information about the process.
-                    if (_runningProc.HasExited) //If Running process has already exited then set the _runningProc to null. This should also fix problems for launcher apps being set as the RunningProcess and never being updated when the main app has been launched.
-                        _runningProc = null;
+                    RunningProcess.Refresh(); //Refresh the information about the process.
+                    if (RunningProcess.HasExited) //If Running process has already exited then set the _runningProc to null. This should also fix problems for launcher apps being set as the RunningProcess and never being updated when the main app has been launched.
+                        RunningProcess = null;
                 }
-                _isRunning = true; 
-                
+                IsRunning = true; 
             }
             else 
             {
-                _isRunning = false; 
-                _runningProc = null; //Make sure to set the RunningProcess field to nothing.
+                IsRunning = false; 
+                RunningProcess = null; //Make sure to set the RunningProcess field to nothing.
             }
 
-            isRunningOrUpdating = Helper.HKCU_RegGetKeyInt(regPath, SteamAppsManager.REG_UPDATING_KEY); //The next thing that we need to check is if the app is being updated by steam. 
+            isRunningOrUpdating = Helper.HKCU_RegGetKeyInt(regPath, SteamAppsManager.RegUpdatingKey); //The next thing that we need to check is if the app is being updated by steam. 
             
             if (isRunningOrUpdating < 0) //This one is less complex than for the "app is running" check as we only need to set the IsUpdating field to true or false.
                 throw new NullReferenceException("Updating key under " + regPath + " registry path is not found!");
-            else if (isRunningOrUpdating > 0)
-                _isUpdating = true;
-            else
-                _isUpdating = false;
-
-        
+            
+            IsUpdating = isRunningOrUpdating > 0;
         }
     }
 }

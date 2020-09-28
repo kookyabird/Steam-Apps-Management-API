@@ -12,29 +12,25 @@ namespace Indieteur.SAMAPI
         /// </summary>
         /// <param name="listofapps"></param>
         /// <param name="name">Name of the app to locate.</param>
-        /// <param name="CaseSensitive">Indicates if the capitalization of the name should matter for the search.</param>
-        /// <param name="ThrowErrorOnNotFound">Indicates whether the method should throw an error if no matching Application is found.</param>
+        /// <param name="caseSensitive">Indicates if the capitalization of the name should matter for the search.</param>
+        /// <param name="throwErrorOnNotFound">Indicates whether the method should throw an error if no matching Application is found.</param>
         /// <returns></returns>
-        public static SteamApp FindAppByName(this IEnumerable<SteamApp> listofapps, string name, bool CaseSensitive = false, bool ThrowErrorOnNotFound = false)
+        public static SteamApp FindAppByName(this IEnumerable<SteamApp> listofapps, string name, bool caseSensitive = false, bool throwErrorOnNotFound = false)
         {
             if (string.IsNullOrWhiteSpace(name))
                 throw new ArgumentNullException(nameof(name), "Argument name cannot be null, empty or whitespace!");           
-            if (!CaseSensitive) //If not case sensitive, then convert the name to its lower case variant.
+            if (!caseSensitive) //If not case sensitive, then convert the name to its lower case variant.
                 name = name.ToLower();
 
             foreach (SteamApp sapp in listofapps)
             {
-                string compareName; //Will store the name of the steam app we are checking
-                if (CaseSensitive) 
-                    compareName = sapp.Name;
-                else //If case Sensitive is set to false, set compareName's value to the Name of the steam app in lower case.
-                    compareName = sapp.Name.ToLower();
+                //Will store the name of the steam app we are checking
+                var compareName = caseSensitive ? sapp.Name : sapp.Name.ToLower();
                 if (compareName == name)
                     return sapp;
-
             }
 
-            if (ThrowErrorOnNotFound)
+            if (throwErrorOnNotFound)
                 throw new SteamAppNotFoundException(name + " application is not found!");
             return null;
         }
@@ -43,51 +39,46 @@ namespace Indieteur.SAMAPI
         /// Locate a Steam App using its unique ID in the SteamApps collection.
         /// </summary>
         /// <param name="listofapps"></param>
-        /// <param name="AppID">The unique identifier of the application.</param>
-        /// <param name="ThrowErrorOnNotFound">Indicates whether the method should throw an error if no matching Application is found.</param>
+        /// <param name="appId">The unique identifier of the application.</param>
+        /// <param name="throwErrorOnNotFound">Indicates whether the method should throw an error if no matching Application is found.</param>
         /// <returns></returns>
-        public static SteamApp FindAppByID(this IEnumerable<SteamApp> listofapps, int AppID, bool ThrowErrorOnNotFound = false)
+        public static SteamApp FindAppById(this IEnumerable<SteamApp> listofapps, int appId, bool throwErrorOnNotFound = false)
         {
             foreach (SteamApp sapp in listofapps) //loop through our list of apps
             {
-                if (sapp.AppID == AppID)
+                if (sapp.AppId == appId)
                     return sapp;
             }
-            if (ThrowErrorOnNotFound)
-                throw new SteamAppNotFoundException("application with ID of " + AppID.ToString() + " is not found!");
+            if (throwErrorOnNotFound)
+                throw new SteamAppNotFoundException("application with ID of " + appId + " is not found!");
             return null;
         }
 
         /// <summary>
         /// Kills the process and its children processes.
         /// </summary>
-        /// <param name="_proc"></param>
-        public static void KillProcessAndChildren(this Process _proc)
+        /// <param name="proc"></param>
+        public static void KillProcessAndChildren(this Process proc)
         {
-            KillProcessAndChildrens(_proc.Id);
-            
+            killProcessAndChildrens(proc.Id);
         }
         //Based from https://stackoverflow.com/questions/23845395/in-c-how-to-kill-a-process-tree-reliably.
-        static void KillProcessAndChildrens(int pid)
+        static void killProcessAndChildrens(int pid)
         {
             ManagementObjectSearcher searcher = new ManagementObjectSearcher
               ("Select * From Win32_Process Where ParentProcessID=" + pid);
             ManagementObjectCollection moc = searcher.Get();
             foreach (ManagementObject mo in moc)
             {
-                KillProcessAndChildrens(Convert.ToInt32(mo["ProcessID"]));
+                killProcessAndChildrens(Convert.ToInt32(mo["ProcessID"]));
             }
             try
             {
-                Process proc = Process.GetProcessById(pid);
+                var proc = Process.GetProcessById(pid);
                 proc.Kill();
             }
-            catch (ArgumentException)
-            {
-                // Process already exited.
-            }
+            catch (ArgumentException) { } // Process already exited.
         }
-        
     }
 
     /// <summary>
@@ -95,9 +86,6 @@ namespace Indieteur.SAMAPI
     /// </summary>
     public class SteamAppNotFoundException : Exception
     {
-        public SteamAppNotFoundException(string Message) : base(Message)
-        {
-
-        }
+        public SteamAppNotFoundException(string message) : base(message) { }
     }
 }

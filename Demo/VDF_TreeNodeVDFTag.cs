@@ -1,13 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Indieteur.VDFAPI;
 
 namespace Demo
 {
-    class TreeNodeVDFTag
+    class TreeNodeVdfTag
     {
         public enum Type
         {
@@ -16,10 +12,10 @@ namespace Demo
         }
         public Type TagType { get; private set; }
         public BaseToken Token { get; private set; }
-        public TreeNodeVDFTag(Type tagType, BaseToken _Token)
+        public TreeNodeVdfTag(Type tagType, BaseToken token)
         {
             TagType = tagType;
-            Token = _Token ?? throw new NullReferenceException("Object property of TreeNodeVDFTag cannot be null!");
+            Token = token ?? throw new NullReferenceException("Object property of TreeNodeVDFTag cannot be null!");
         }
 
         

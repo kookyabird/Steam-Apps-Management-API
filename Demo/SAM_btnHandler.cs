@@ -1,16 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
-using Indieteur.SAMAPI;
+
 namespace Demo
 {
     //This file handles all the events associated with the GUI buttons.
-    partial class frmMainDemo
+    partial class FrmMainDemo
     {
         private void btnRefresh_Click(object sender, EventArgs e)
         {
@@ -18,33 +14,33 @@ namespace Demo
         }
         private void btnStartWatchEvents_Click(object sender, EventArgs e)
         {
-            StartStopWatchEvents();
+            startStopWatchEvents();
         }
         private void btnOpenVDFEditor_Click(object sender, EventArgs e)
         {
-            ShowVDFDemo();
+            showVdfDemo();
         }
         private void btnOpenFileExplore_Click(object sender, EventArgs e)
         {
-            OpenDir(txtInstallDir.Text);
+            openDir(txtInstallDir.Text);
         }
         private void btnLaunchApp_Click(object sender, EventArgs e)
         {
             if (lstApps.SelectedItem != null)
-                RunApp(lstApps.SelectedItem as ListBoxItem);
+                runApp(lstApps.SelectedItem as ListBoxItem);
         }
         private void btnExitApp_Click(object sender, EventArgs e)
         {
             if (lstApps.SelectedItem != null)
-                StopApp(lstApps.SelectedItem as ListBoxItem);
+                stopApp(lstApps.SelectedItem as ListBoxItem);
         }
 
 
-        void StopApp(ListBoxItem lbi)
+        void stopApp(ListBoxItem lbi)
         {
             lbi.AssociatedApp.RunningProcess.CloseMainWindow(); //Change this to kill or KillProcessAndChildren instead of CloseMainWindow for an immediate termination of process.
         }
-        void RunApp(ListBoxItem lbi)
+        void runApp(ListBoxItem lbi)
         {
             try
             {
@@ -57,7 +53,7 @@ namespace Demo
             }
         }
 
-        void OpenDir(string path) 
+        void openDir(string path) 
         {
             if (!Directory.Exists(path)) 
                 MessageBox.Show("Directory " + path + " does not exist!", "Steam Apps Management", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -72,31 +68,31 @@ namespace Demo
             }
         }
 
-        void ShowVDFDemo() //This method is called when the Show VDF Editor button is pressed.
+        void showVdfDemo() //This method is called when the Show VDF Editor button is pressed.
         {
-            frmDemoVDF frmVDF = new frmDemoVDF();
-            frmVDF.Show(this);
+            FrmDemoVdf frmVdf = new FrmDemoVdf();
+            frmVdf.Show(this);
         }
 
         void SAM_Refresh() //This method is called when the Refresh Button is pressed.
         {
             if (tmrEvents.Enabled) //stop our timer first before we do anything.
                 tmrEvents.Stop();
-            SAM.Refresh(); //Perform the refresh.
+            _sam.Refresh(); //Perform the refresh.
             GUI_Reset(); 
-            LoadSteamAppsToListBox(); //Reload data to list box.
+            loadSteamAppsToListBox(); //Reload data to list box.
         }
 
-        void StartStopWatchEvents() //This method is called when the Start/Stop watching events button is pressed.
+        void startStopWatchEvents() //This method is called when the Start/Stop watching events button is pressed.
         {
-            if (SAM.EventListenerRunning) 
+            if (_sam.EventListenerRunning) 
             {
-                SAM.StopListeningForEvents();
+                _sam.StopListeningForEvents();
                 GUI_EventListenUpdate(false);
             }
             else
             {
-                SAM.StartListeningForEvents();
+                _sam.StartListeningForEvents();
                 GUI_EventListenUpdate(true);
 
             }

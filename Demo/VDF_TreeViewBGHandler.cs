@@ -1,45 +1,41 @@
 ﻿using Indieteur.VDFAPI;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace Demo
 {
-    public partial class frmDemoVDF : Form
+    public partial class FrmDemoVdf : Form
     {
-        void LoadVDFDataToTreeView(VDFData _vdfdata)
+        void loadVdfDataToTreeView(VdfData vdfData)
         {
             tViewData.Nodes.Clear();
-            if (_vdfdata.Nodes != null) 
+            if (vdfData.Nodes != null) 
             {
-                foreach (VDFNode vNode in _vdfdata.Nodes) 
+                foreach (VdfNode vNode in vdfData.Nodes) 
                 {
-                    LoadVDFNodeToTreeView(vNode);
+                    loadVdfNodeToTreeView(vNode);
                 }
             }
             if (tViewData.Nodes.Count > 0) //Make sure to expand our first node if it exists.
                 tViewData.Nodes[0].Expand();
         }
 
-        void LoadVDFNodeToTreeView(VDFNode node, TreeNode parent = null)
+        void loadVdfNodeToTreeView(VdfNode node, TreeNode parent = null)
         {
             TreeNode newTreeNode = new TreeNode(node.Name); 
-            newTreeNode.Tag = new TreeNodeVDFTag(TreeNodeVDFTag.Type.Node, node); //Set the tag of our new TreeNode to our VDFNode using our TreeNodeVDFTag which will help us identify which BaseToken we have.
+            newTreeNode.Tag = new TreeNodeVdfTag(TreeNodeVdfTag.Type.Node, node); //Set the tag of our new TreeNode to our VDFNode using our TreeNodeVDFTag which will help us identify which BaseToken we have.
             if (node.Keys != null)
             {
-                foreach (VDFKey key in node.Keys)
+                foreach (VdfKey key in node.Keys)
                 {
-                    LoadVDFKeyToTreeView(key, newTreeNode); //Loop through each child keys of our VDFNode and add them to our newTreeNode child nodes recursively.
+                    loadVdfKeyToTreeView(key, newTreeNode); //Loop through each child keys of our VDFNode and add them to our newTreeNode child nodes recursively.
                 }
             }
             if (node.Nodes != null) 
             {
-                foreach (VDFNode childNode in node.Nodes)
+                foreach (VdfNode childNode in node.Nodes)
                 {
-                    LoadVDFNodeToTreeView(childNode, newTreeNode);
+                    loadVdfNodeToTreeView(childNode, newTreeNode);
                 }
             }
 
@@ -50,106 +46,105 @@ namespace Demo
                 parent.Nodes.Add(newTreeNode);
         }
 
-        void LoadVDFKeyToTreeView(VDFKey key, TreeNode parent)
+        void loadVdfKeyToTreeView(VdfKey key, TreeNode parent)
         {
             if (parent == null) //Key must have a parent node. Throw an error if parent is set to null.
-                throw new ArgumentNullException("parent argument cannot be null!");
+                throw new ArgumentNullException(nameof(parent));
             TreeNode newTreeNode = new TreeNode(key.Name); 
-            newTreeNode.Tag = new TreeNodeVDFTag(TreeNodeVDFTag.Type.Key, key);
+            newTreeNode.Tag = new TreeNodeVdfTag(TreeNodeVdfTag.Type.Key, key);
             parent.Nodes.Add(newTreeNode); 
         }
 
-        TreeNode AddRootNode(string Name, VDFData _vdfdata)
+        TreeNode addRootNode(string name, VdfData vdfdata)
         {
-            VDFNode newNode; //Declare our newNode type VDFNode variable which we will be used by our CreateNewNode to pass back our newly created VDFNode.
-            TreeNode newTreeNode = CreateNewNode(Name, _vdfdata, null, out newNode); //Call the method which will do the job of creating a TreeNode and VDFNode for us.
-            if (_vdfdata.Nodes == null) 
+            VdfNode newNode; //Declare our newNode type VDFNode variable which we will be used by our CreateNewNode to pass back our newly created VDFNode.
+            TreeNode newTreeNode = createNewNode(name, vdfdata, null, out newNode); //Call the method which will do the job of creating a TreeNode and VDFNode for us.
+            if (vdfdata.Nodes == null) 
                 throw new NullReferenceException("Nodes list of VDFData class is set to null!");
-            _vdfdata.Nodes.Add(newNode); 
+            vdfdata.Nodes.Add(newNode); 
             tViewData.Nodes.Add(newTreeNode);
             return newTreeNode;
         }
 
-        TreeNode AddNodeToNode(string Name, VDFData parentVDFDataStructure, TreeNodeVDFTag treeNodeTag, TreeNode nodeSelected)
+        TreeNode addNodeToNode(string name, VdfData parentVdfDataStructure, TreeNodeVdfTag treeNodeTag, TreeNode nodeSelected)
         {
             TreeNode newTreeNode; 
-            if (treeNodeTag.TagType == TreeNodeVDFTag.Type.Node) //If we have the node itself selected on our Treeview, we just need to call the AddNodeToNode method directly.
+            if (treeNodeTag.TagType == TreeNodeVdfTag.Type.Node) //If we have the node itself selected on our Treeview, we just need to call the AddNodeToNode method directly.
             {
-                newTreeNode = AddNodeToNode(Name, nodeSelected, parentVDFDataStructure, treeNodeTag.Token as VDFNode);
+                newTreeNode = addNodeToNode(name, nodeSelected, parentVdfDataStructure, treeNodeTag.Token as VdfNode);
             }
             else
             {
                 //We will need to retrieve the parent of this key for this one if the key is the one that is selected. 
                 if (nodeSelected.Parent == null) //Make sure that the parent of the TreeNode is set to another TreeNode
                     throw new NullReferenceException("TreeNode " + nodeSelected.Text + " parent property is not set!");
-                VDFKey selectedKey = treeNodeTag.Token as VDFKey; //Cast our token to key first.
+                VdfKey selectedKey = treeNodeTag.Token as VdfKey; //Cast our token to key first.
                 if (selectedKey.Parent == null) 
                     throw new NullReferenceException("Parent property of key " + selectedKey.Name + " is not set!");
-                VDFNode parentNode = selectedKey.Parent; 
-                newTreeNode = AddNodeToNode(Name, nodeSelected.Parent, vdfData, parentNode);
+                VdfNode parentNode = selectedKey.Parent; 
+                newTreeNode = addNodeToNode(name, nodeSelected.Parent, _vdfData, parentNode);
             }
             return newTreeNode;
         }
 
-        TreeNode AddNodeToNode(string Name, TreeNode Parent, VDFData parentVDFDataStructure, VDFNode nodeParent)
+        TreeNode addNodeToNode(string name, TreeNode parent, VdfData parentVdfDataStructure, VdfNode nodeParent)
         {
-            VDFNode newNode; //Declare our newNode type VDFNode variable which we will be used by our CreateNewNode to pass back our newly created VDFNode.
-            TreeNode newTreeNode = CreateNewNode(Name, parentVDFDataStructure, nodeParent, out newNode); //Call the method which will do the job of creating a TreeNode and VDFNode for us.
+            TreeNode newTreeNode = createNewNode(name, parentVdfDataStructure, nodeParent, out VdfNode newNode);
             if (nodeParent.Nodes == null) 
                 throw new NullReferenceException("Nodes list of VDFData class is set to null!");
             nodeParent.Nodes.Add(newNode);
-            Parent.Nodes.Add(newTreeNode); 
+            parent.Nodes.Add(newTreeNode); 
             return newTreeNode;
         }
 
-        TreeNode CreateNewNode(string Name, VDFData parentVDFStructure, VDFNode parentNode, out VDFNode newNode)
+        TreeNode createNewNode(string name, VdfData parentVdfStructure, VdfNode parentNode, out VdfNode newNode)
         {
-            newNode = new VDFNode(Name, parentVDFStructure, parentNode); //Create our new VDFNode first which will be referenced by our newNode argument (which will be passed back to the calling method.)
-            TreeNode newTreeNode = new TreeNode(Name); 
-            newTreeNode.Tag = new TreeNodeVDFTag(TreeNodeVDFTag.Type.Node, newNode); //Set the tag to our newNode. Make sure to use VDFTag.
+            newNode = new VdfNode(name, parentVdfStructure, parentNode); //Create our new VDFNode first which will be referenced by our newNode argument (which will be passed back to the calling method.)
+            TreeNode newTreeNode = new TreeNode(name); 
+            newTreeNode.Tag = new TreeNodeVdfTag(TreeNodeVdfTag.Type.Node, newNode); //Set the tag to our newNode. Make sure to use VDFTag.
             return newTreeNode; 
         }
 
 
-        TreeNode CreateNewKey(string Name, string Value, TreeNodeVDFTag treeNodeTag, TreeNode nodeSelected)
+        TreeNode createNewKey(string name, string value, TreeNodeVdfTag treeNodeTag, TreeNode nodeSelected)
         {
             TreeNode newTreeNode;
-            if (treeNodeTag.TagType == TreeNodeVDFTag.Type.Node) //If the tag type of our selected tree node is a VDFNode. Then it's quite easy to create a new key for us. Just need to call the CreateNewKey method.
+            if (treeNodeTag.TagType == TreeNodeVdfTag.Type.Node) //If the tag type of our selected tree node is a VDFNode. Then it's quite easy to create a new key for us. Just need to call the CreateNewKey method.
             {
-                newTreeNode = CreateNewKey(Name, Value, treeNodeTag.Token as VDFNode, nodeSelected);
+                newTreeNode = createNewKey(name, value, treeNodeTag.Token as VdfNode, nodeSelected);
             }
             else
             {
                 //We will need to retrieve the parent of this key for this one if the key is the one that is selected. 
                 if (nodeSelected.Parent == null) //Make sure that the parent of the TreeNode is set to another TreeNode
                     throw new NullReferenceException("TreeNode " + nodeSelected.Text + " parent property is not set!");
-                VDFKey selectedKey = treeNodeTag.Token as VDFKey; //Cast our token to key first.
+                VdfKey selectedKey = treeNodeTag.Token as VdfKey; //Cast our token to key first.
                 if (selectedKey.Parent == null) 
                     throw new NullReferenceException("Parent property of key " + selectedKey.Name + " is not set!");
-                VDFNode parentNode = selectedKey.Parent;
-                newTreeNode = CreateNewKey(Name, Value, parentNode, nodeSelected.Parent );
+                VdfNode parentNode = selectedKey.Parent;
+                newTreeNode = createNewKey(name, value, parentNode, nodeSelected.Parent );
             }
             return newTreeNode;
         }
-        TreeNode CreateNewKey(string Name, string Value, VDFNode parent, TreeNode parentTreeNode)
+        TreeNode createNewKey(string name, string value, VdfNode parent, TreeNode parentTreeNode)
         {
             if (parent.Keys == null) 
                 throw new NullReferenceException("Keys list of " + parent.Name + " node is set to null!");
-            VDFKey newKey = new VDFKey(Name, Value, parent); //Create our key with the values passed on to us as arguments.
+            VdfKey newKey = new VdfKey(name, value, parent); //Create our key with the values passed on to us as arguments.
             parent.Keys.Add(newKey); 
-            TreeNode newTreeNode = new TreeNode(Name); 
-            newTreeNode.Tag = new TreeNodeVDFTag(TreeNodeVDFTag.Type.Key, newKey); //Store our VDFKey on the tag property of our newTreeNode. Make sure to use the TreeNodeVDFTag.
+            TreeNode newTreeNode = new TreeNode(name); 
+            newTreeNode.Tag = new TreeNodeVdfTag(TreeNodeVdfTag.Type.Key, newKey); //Store our VDFKey on the tag property of our newTreeNode. Make sure to use the TreeNodeVDFTag.
             parentTreeNode.Nodes.Add(newTreeNode); 
             return newTreeNode;
         }
 
-        void DeleteVDFNode(VDFNode nodeToDelete, TreeNode treeNodeToDelete)
+        void deleteVdfNode(VdfNode nodeToDelete, TreeNode treeNodeToDelete)
         {
             if (nodeToDelete.Parent == null) //If Parent property of the nodeToDelete is null then most likely we are a root node.
             {
-                if (nodeToDelete.ParentVDFStructure == null) 
+                if (nodeToDelete.ParentVdfStructure == null) 
                     throw new NullReferenceException("ParentVDFStructure property of Node " + nodeToDelete.Name + " is not set!");
-                nodeToDelete.RemoveNodeFromParent(FullRemovalFromTheVDFStruct: true);
+                nodeToDelete.RemoveNodeFromParent(fullRemovalFromTheVdfStruct: true);
                 tViewData.Nodes.Remove(treeNodeToDelete); //No need to do checks for our TreeNode as we can most certainly assume that our TreeNode is a root node as well.
             }
             else //If the nodeToDelete's parent property is set to another VDFNode then just remove it from the child nodes list of the parent. Do the same for the treenode.
@@ -160,7 +155,7 @@ namespace Demo
            
         }
 
-        void DeleteVDFKey(VDFKey keyToDelete, TreeNode treeNodeToDelete)
+        void deleteVdfKey(VdfKey keyToDelete, TreeNode treeNodeToDelete)
         {
             if (keyToDelete.Parent == null) 
                 throw new NullReferenceException("Parent property of Key " + keyToDelete.Name + " is not set!");
@@ -169,32 +164,32 @@ namespace Demo
         }
 
 
-        void UpdateTokenInfo(TreeNodeVDFTag treeNodeTag, TreeNode treeNodeToUpdate)
+        void updateTokenInfo(TreeNodeVdfTag treeNodeTag, TreeNode treeNodeToUpdate)
         {
-            if (treeNodeTag.TagType == TreeNodeVDFTag.Type.Key) //Call the correct function by checking the type of token that we have.
-                UpdateKeyInfo(txtName.Text, txtValue.Text, (VDFKey)treeNodeTag.Token, treeNodeToUpdate);
+            if (treeNodeTag.TagType == TreeNodeVdfTag.Type.Key) //Call the correct function by checking the type of token that we have.
+                updateKeyInfo(txtName.Text, txtValue.Text, (VdfKey)treeNodeTag.Token, treeNodeToUpdate);
             else
-                UpdateNodeInfo(txtName.Text, (VDFNode)treeNodeTag.Token, treeNodeToUpdate);
+                updateNodeInfo(txtName.Text, (VdfNode)treeNodeTag.Token, treeNodeToUpdate);
         }
 
-        void UpdateNodeInfo(string Name, VDFNode nodeToUpdate, TreeNode treeNodeToUpdate)
+        void updateNodeInfo(string name, VdfNode nodeToUpdate, TreeNode treeNodeToUpdate)
         {
-            if (Name != nodeToUpdate.Name) //To prevent initializing a new string. Check if Name is just the same as the one on the node.
+            if (name != nodeToUpdate.Name) //To prevent initializing a new string. Check if Name is just the same as the one on the node.
             {
-                nodeToUpdate.Name = Name;
-                treeNodeToUpdate.Text = Name;
+                nodeToUpdate.Name = name;
+                treeNodeToUpdate.Text = name;
             }
         }
 
-        void UpdateKeyInfo(string Name, string Value, VDFKey keyToUpdate, TreeNode treeNodeToUpdate)
+        void updateKeyInfo(string name, string value, VdfKey keyToUpdate, TreeNode treeNodeToUpdate)
         {
-            if (Name != keyToUpdate.Name) //To prevent initializing a new string. Check if Name is just the same as the one on the node.
+            if (name != keyToUpdate.Name) //To prevent initializing a new string. Check if Name is just the same as the one on the node.
             {
-                keyToUpdate.Name = Name;
-                treeNodeToUpdate.Text = Name;
+                keyToUpdate.Name = name;
+                treeNodeToUpdate.Text = name;
             }
-            if (Value != keyToUpdate.Value) //Check if the value string is just the same on the VDFKey instance.
-                keyToUpdate.Value = Value;
+            if (value != keyToUpdate.Value) //Check if the value string is just the same on the VDFKey instance.
+                keyToUpdate.Value = value;
         }
 
     }

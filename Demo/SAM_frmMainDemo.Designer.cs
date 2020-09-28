@@ -1,6 +1,6 @@
 ﻿namespace Demo
 {
-    partial class frmMainDemo
+    partial class FrmMainDemo
     {
         /// <summary>
         /// Required designer variable.
@@ -290,7 +290,7 @@
             this.Controls.Add(this.lstApps);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MaximizeBox = false;
-            this.Name = "frmMainDemo";
+            this.Name = "FrmMainDemo";
             this.ShowIcon = false;
             this.Text = "Steam Apps Management Demo";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.frmMainDemo_FormClosing);

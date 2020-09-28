@@ -1,22 +1,15 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Indieteur.VDFAPI;
 using Indieteur.SAMAPI;
 
 namespace Demo
 {
-    public partial class frmDemoVDF : Form
+    public partial class FrmDemoVdf : Form
     {
-        VDFData vdfData = new VDFData(); //Instance of our VDFData.
-        TreeNodeVDFTag selectedToken;
-        public frmDemoVDF()
+        VdfData _vdfData = new VdfData(); //Instance of our VDFData.
+        TreeNodeVdfTag _selectedToken;
+        public FrmDemoVdf()
         {
             InitializeComponent();
            
@@ -36,22 +29,22 @@ namespace Demo
         {
             DialogResult dialogResult = openFileDialog.ShowDialog(this); //Show our open file dialog and store its result on a variable.
             string fileName = openFileDialog.FileName; //Cache our filename as we are going to reset the dialogbox
-            ClearDialogBoxes();
+            clearDialogBoxes();
             if (dialogResult == DialogResult.Cancel) 
                 return;
-            ResetGUIAndVariables(); 
-            vdfData.LoadData(fileName); 
-            LoadVDFDataToTreeView(vdfData); 
+            resetGuiAndVariables(); 
+            _vdfData.LoadDataFromFile(fileName); 
+            loadVdfDataToTreeView(_vdfData); 
         }
 
         private void btnSaveToFile_Click(object sender, EventArgs e)
         {
             DialogResult dialogResult = saveFileDialog.ShowDialog(this); //Show our save file dialog and store its result on a variable.
             string fileName = saveFileDialog.FileName; //Cache our filename as we are going to reset the dialogbox
-            ClearDialogBoxes();
+            clearDialogBoxes();
             if (dialogResult == DialogResult.Cancel) 
                 return;
-            vdfData.SaveToFile(fileName, true);
+            _vdfData.SaveToFile(fileName, true);
 
         }
 

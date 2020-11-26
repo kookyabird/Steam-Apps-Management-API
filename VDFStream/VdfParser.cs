@@ -70,7 +70,7 @@ namespace Indieteur.VDFAPI
                         closeQuotedToken();
                         continue;
                     case Mode.InsideDoubleQuotes:
-                        appendChar(curChar);
+                        appendCharAndIterateReaderPos(curChar);
                         continue;
                     case Mode.None:
                     default:
@@ -102,7 +102,7 @@ namespace Indieteur.VDFAPI
                         processWhitespace();
                         continue;
                     default:
-                        appendChar(curChar);
+                        appendCharAndIterateReaderPos(curChar);
                         continue;
                 }
             }
@@ -113,7 +113,7 @@ namespace Indieteur.VDFAPI
             }
         }
 
-        private void appendChar(char c)
+        private void appendCharAndIterateReaderPos(char c)
         {
             _sb.Append(c);
             iterateReaderPos();
@@ -122,7 +122,7 @@ namespace Indieteur.VDFAPI
         private void closeQuotedToken()
         {
             _parserMode = Mode.None;
-            tryNewTokenOrKey(true);
+            tryNewToken(true);
             iterateReaderPos();
         }
 
@@ -132,14 +132,14 @@ namespace Indieteur.VDFAPI
             _characterCount = 0;
             _parserMode = Mode.None;
             // Newline is a delimeter for unquoted tokens.
-            tryNewTokenOrKey(false);
+            tryNewToken(false);
             iterateReaderPos();
         }
 
         private void enterBracket()
         {
             _parserMode = Mode.InsideBrackets;
-            tryNewTokenOrKey(false);
+            tryNewToken(false);
             iterateReaderPos();
         }
 
@@ -148,7 +148,7 @@ namespace Indieteur.VDFAPI
             _parserMode = Mode.InsideComment;
 
             // Check if we just finished a token since comments can touch unescaped tokens.
-            tryNewTokenOrKey(false);
+            tryNewToken(false);
 
             // Move ahead 2 to avoid reprocessing the same character.
             iterateReaderPos(2);
@@ -156,38 +156,37 @@ namespace Indieteur.VDFAPI
 
         private void enterNode()
         {
-            if(_previousString == null) //Let's first check if the StringBuilder hasn't been flushed yet.
+            // Check for node name.
+            if(_previousString == null)
             {
-                if(_sb.Length == 0)
-                {
-                    throw new VdfStreamException("Node name is set to null!", _lineCounter, _characterCount);
-                }
-
-                setPreviousStringToStringBuilder();
+                if(_sb.Length == 0) throw new VdfStreamException("No node name detected.", _lineCounter, _characterCount);
+                storePreviousString();
             }
 
             var newNode = new VdfNode(_previousString, _vdfData);
 
-            _previousString = null; //We already processed the previousString and it's the name of our node.
-            if(_currentNode != null) //Check if we are already inside another node.
+            _previousString = null;
+
+            if(_currentNode != null) // Check if we are already inside another node.
             {
-                //If we are, then the node we are creating is the children of our current node so let's set the parent reference of the new node to our current node.
+                // Creating a child of our current node, so set the current node as parent.
                 newNode.Parent = _currentNode;
                 _currentNode.Nodes.Add(newNode); //Add new node to the nodes of the parent node
             }
-            else
+            else // Creating a root node, so add to the nodes list.
             {
-                _vdfData.Nodes.Add(newNode); // If we aren't, it means that the node we are creating is a root node so we have to add the new node to the nodes list of this class.
+                _vdfData.Nodes.Add(newNode); 
             }
 
-            _currentNode = newNode; // We are now inside a child node
+            // Switch to work on the new node.
+            _currentNode = newNode;
             iterateReaderPos();
         }
 
         private void exitNode()
         {
-            tryNewTokenOrKey(false);
-            //If current node has parent, switch to working on the parent node, else we are working on the root node, and we switch to working on no node.
+            tryNewToken(false);
+            // Switch to current node's parent, or no node if if there isn't.
             _currentNode = _currentNode?.Parent;
             iterateReaderPos();
         }
@@ -202,7 +201,7 @@ namespace Indieteur.VDFAPI
         {
             _parserMode = Mode.InsideDoubleQuotes;
             // New quoted token can be a delimeter for unquoted tokens.
-            tryNewTokenOrKey(false);
+            tryNewToken(false);
             _sb.Clear();
             iterateReaderPos();
         }
@@ -241,25 +240,25 @@ namespace Indieteur.VDFAPI
         private void processWhitespace()
         {
             // Whitespace is a delimeter for unquoted tokens.
-            tryNewTokenOrKey(false);
+            tryNewToken(false);
             iterateReaderPos();
         }
 
-        private void setPreviousStringToStringBuilder()
+        private void storePreviousString()
         {
             _previousString = _sb.ToString();
             _sb.Clear();
         }
 
         //TODO: Clean this up
-        private void tryNewTokenOrKey(bool mustHaveNewToken)
+        private void tryNewToken(bool mustHaveNewToken)
         {
-            if(_previousString != null) // If we already have a string before this one that isn't part of another key or isn't the name of another node.
+            if(_previousString != null)
             {
-                var newToken = ""; //This will contain the value of our new token.
-                if(mustHaveNewToken && _sb.Length > 0) //If we are required to have a new token and the StringBuilder isn't empty.
+                var newToken = "";
+                if(mustHaveNewToken && _sb.Length > 0)
                 {
-                    newToken = _sb.ToString(); //Set the newToken to the value of the StringBuilder.
+                    newToken = _sb.ToString();
                 }
                 //NOTE: Scenario of requiring a token and not finding one isn't covered.
                 else if(!mustHaveNewToken)
@@ -269,16 +268,16 @@ namespace Indieteur.VDFAPI
                     newToken = _sb.ToString();
                 }
 
-                //Since we have an unhandled previousString, it means that the current token we are working on and the previous one is a key-value pair. If that's the case, then it needs to be inside a node so we check that.
+                // An unhandled previousString means the current and previous tokens are a key-value pair, and must be inside a node.
                 if(_currentNode == null)
                 {
-                    throw new VdfStreamException("Key-value pair must be inside a node!", _lineCounter, _characterCount);
+                    throw new VdfStreamException("Key-value pair must be inside a node.", _lineCounter, _characterCount);
                 }
 
-                VdfKey key = new VdfKey(_previousString, newToken, _currentNode); //key name first (previousString) before its value
+                VdfKey key = new VdfKey(_previousString, newToken, _currentNode);
                 _currentNode.Keys.Add(key);
-                _previousString = null; //We already know that the previous String is the name of the key and it has already been parsed, so set the referencing variable to null.
-                _sb.Clear(); //We do the same with stringbuilder.
+                _previousString = null;
+                _sb.Clear();
             }
             else
             {
@@ -286,13 +285,13 @@ namespace Indieteur.VDFAPI
                 {
                     if(mustHaveNewToken)
                     {
-                        throw new VdfStreamException("Node name or Key name is set to null!", _lineCounter, _characterCount);
+                        throw new VdfStreamException("Node name or Key name is set to null.", _lineCounter, _characterCount);
                     }
 
                     return;
                 }
-                //We do not know if this string is a name of a node/key so we store it and proceed.
-                setPreviousStringToStringBuilder();
+                // We do not know if this string is a name of a node/key so we store it and proceed.
+                storePreviousString();
             }
         }
 
